@@ -41,7 +41,7 @@ void* child (void* params) {
 	int sleep_time = child_params->sleep_time;
 	int spin_time = child_params->spin_time;
 	int thread_priority = child_params->thread_priority;
-	//pthread_mutex_t mutex = child_params->mutex;
+	pthread_mutex_t mutex = child_params->mutex;
 
 	pthread_setname_np(pthread_self(), child_params->name);
 	pthread_setschedprio(pthread_self(), thread_priority);
@@ -51,9 +51,9 @@ void* child (void* params) {
 
 	printf("%s is alive\n", child_params->name);
 
-	//if(!pthread_mutex_lock(&mutex) != 0){
-	//	printf("pthread_mutex_lock failed for %s\n", child_params->name);
-	//}
+	if(!pthread_mutex_lock(&mutex) != 0){
+		printf("pthread_mutex_lock failed for %s\n", child_params->name);
+	}
 
 	struct timespec timespecWhen = {0, 25000000}; //25ms
 
@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
 		child_buffer[params_count].thread_priority = *prio;
 		child_buffer[params_count].mutex = mutex;
 
-		//pthread_mutex_lock(&mutex);
+		pthread_mutex_lock(&mutex);
 	}
 
 	printf("Starting all children now\n");
