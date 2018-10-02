@@ -230,7 +230,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	printf("Children have all been slaughtered!!!!.\n");
+	printf("Children have all been slaughtered.\n");
 	fflush(stdout);
 
 	return 0;
