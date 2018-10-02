@@ -1,7 +1,9 @@
 # QNXscheduler
 Basic Scheduler project intended to run on QNX systems.
 
-*master* branch will be most current part of the project, and each branch will be the last completed phase of each part of the project.
+**master** branch will be most currently finished parts together.
+Each phase of the project will be a new working branch based on master.
+Once a part is completed, it will be merged into master.
 
 Part 1 "Framework" can be detailed [here](http://www.se.rit.edu/~swen-565/projects/Scheduling/building_framework.html)
 
