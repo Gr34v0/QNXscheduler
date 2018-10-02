@@ -41,7 +41,7 @@ void* child (void* params) {
 	int sleep_time = child_params->sleep_time;
 	int spin_time = child_params->spin_time;
 	int thread_priority = child_params->thread_priority;
-	pthread_mutex_t mutex = child_params->mutex;
+	//pthread_mutex_t mutex = child_params->mutex;
 
 	pthread_setname_np(pthread_self(), child_params->name);
 	pthread_setschedprio(pthread_self(), thread_priority);
@@ -59,8 +59,6 @@ void* child (void* params) {
 
 	while(1)
 	{
-		//printf("Spinning %s\n", child_params->name);
-		//fflush(stdout);
 		int i;
 		for(i=0; i<((int)spin_time*1000); i+=25)
 		{
@@ -79,8 +77,6 @@ void* child (void* params) {
 					break;
 			}
 		}
-
-		//printf("Sleeping %s\n", child_params->name);
 		delay(sleep_time*1000);
 		printf("%s period complete - %d spin %d sleep\n", child_params->name, child_params->spin_time, child_params->sleep_time);
 		fflush(stdout);
@@ -98,7 +94,6 @@ int inputNumberOfChildren(){
 	int number_of_children;
 	printf("How many children would you like to spawn? Max %d: ", MAX_CHILDREN);
 	scanf("%d", &number_of_children);
-	printf("You've chosen %d children\n", number_of_children);
 	fflush(stdout);
 
 	if(number_of_children > MAX_CHILDREN){
@@ -118,8 +113,6 @@ int inputNumberOfChildren(){
 int main(int argc, char *argv[]) {
 
 	nanospin_calibrate(0);
-
-	//char main_name[16] = "BROKEN!"; //If main thread name is this, we know something isn't right
 	memset(children, 0x00, sizeof(children));
 
 	pthread_setname_np(pthread_self() ,"main");
@@ -131,11 +124,6 @@ int main(int argc, char *argv[]) {
 
 	for( params_count = 0; params_count<children_count; params_count++)
 	{
-
-		fflush(stdout);
-		printf("Entering for loop for params capture\n");
-
-		//char* child_name = malloc(sizeof(char) * MAX_NAME_LENGTH);
 		char child_name[MAX_NAME_LENGTH];
 		memset(child_name, 0x00, MAX_NAME_LENGTH);
 		int* sleep = malloc(sizeof(int));
@@ -191,9 +179,6 @@ int main(int argc, char *argv[]) {
 		child_buffer[params_count].mutex = mutex;
 
 		//pthread_mutex_lock(&mutex);
-
-		printf("Created params struct: {%s, %d, %d, %d}\n", child_buffer[params_count].name, child_buffer[params_count].sleep_time, child_buffer[params_count].spin_time, child_buffer[params_count].thread_priority  );
-		fflush(stdout);
 	}
 
 	printf("Starting all children now\n");
@@ -230,9 +215,6 @@ int main(int argc, char *argv[]) {
 			if(strcmp(child_name, "main") == 0){
 				continue;
 			}
-
-			printf("Comparing to %s\n", child_name);
-			fflush(stdout);
 			if( strcmp(child_to_kill, child_name) == 0 ){
 				if( ThreadDestroy(children[i], 10, NULL) != 0){ //Should use POSIX command?? keep as Microkernel?
 					printf("Failed to kill %s\n", child_name);

@@ -1,4 +1,4 @@
-LIST=CPU
+LIST=VARIANT
 ifndef QRECURSE
 QRECURSE=recurse.mk
 ifdef QCONFIG
