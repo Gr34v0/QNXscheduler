@@ -41,24 +41,36 @@ void* child (void* params) {
 	int sleep_time = child_params->sleep_time;
 	int spin_time = child_params->spin_time;
 	int thread_priority = child_params->thread_priority;
-	pthread_mutex_t mutex = child_params->mutex;
 
 	pthread_setname_np(pthread_self(), child_params->name);
 	pthread_setschedprio(pthread_self(), thread_priority);
+
+	pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+	if(pthread_mutex_init(&mutex, NULL) != EOK){
+		printf("pthread_mutex_init has failed for child thread %s\n", child_params->name);
+	}else{
+		printf("pthread_mutex_init successful for child thread %s\n", child_params->name);
+	}
+
+	mutex = child_params->mutex;
+
 
 	//sleep(1); //wait for name to be assigned from main thread
 	// if this isn't done, the child thread won't always be aware of what it's name is.
 
 	printf("%s is alive\n", child_params->name);
 
-	if(!pthread_mutex_lock(&mutex) != 0){
-		printf("pthread_mutex_lock failed for %s\n", child_params->name);
-	}
-
 	struct timespec timespecWhen = {0, 25000000}; //25ms
 
 	while(1)
 	{
+		int errcode = pthread_mutex_lock(&mutex);
+		if( errcode != EOK){
+			printf("MAIN: pthread_mutex_lock failed for %s, code %d\n", child_params->name, errcode);
+		}else{
+			printf("MAIN: pthread_mutex_lock successful for %s\n", child_params->name);
+		}
+
 		int i;
 		for(i=0; i<((int)spin_time*1000); i+=25)
 		{
@@ -80,6 +92,13 @@ void* child (void* params) {
 		delay(sleep_time*1000);
 		printf("%s period complete - %d spin %d sleep\n", child_params->name, child_params->spin_time, child_params->sleep_time);
 		fflush(stdout);
+
+		int errcode2 = pthread_mutex_unlock(&mutex);
+		if( errcode2 != EOK){
+				printf("MAIN: pthread_mutex_unlock failed for %s code %d\n", child_params->name, errcode2);
+			}else{
+				printf("MAIN: pthread_mutex_unlock successful for %s\n", child_params->name);
+			}
 
 	}
 
@@ -167,18 +186,13 @@ int main(int argc, char *argv[]) {
 		printf("Thread priority chosen to be %d\n", *prio);
 		fflush(stdout);
 
-		pthread_mutex_t mutex;
-		if(pthread_mutex_init(&mutex, NULL) != 0){
-			printf("pthread_mutex_init has failed for child thread %s\n", child_name);
-		}
 
 		strcpy(child_buffer[params_count].name, child_name);
 		child_buffer[params_count].sleep_time = *sleep;
 		child_buffer[params_count].spin_time = *spin;
 		child_buffer[params_count].thread_priority = *prio;
-		child_buffer[params_count].mutex = mutex;
+		//child_buffer[params_count].mutex = mutex;
 
-		pthread_mutex_lock(&mutex);
 	}
 
 	printf("Starting all children now\n");
