@@ -52,7 +52,7 @@ void* child (void* params) {
 		printf("pthread_mutex_init successful for child thread %s\n", child_params->name);
 	}
 
-	mutex = child_params->mutex;
+	child_params->mutex = mutex;
 
 
 	//sleep(1); //wait for name to be assigned from main thread
@@ -66,10 +66,18 @@ void* child (void* params) {
 	{
 		int errcode = pthread_mutex_lock(&mutex);
 		if( errcode != EOK){
-			printf("MAIN: pthread_mutex_lock failed for %s, code %d\n", child_params->name, errcode);
+			printf("CHILD: pthread_mutex_lock failed for %s, code %d\n", child_params->name, errcode);
 		}else{
-			printf("MAIN: pthread_mutex_lock successful for %s\n", child_params->name);
+			printf("CHILD: pthread_mutex_lock successful for %s\n", child_params->name);
 		}
+
+		int errcode2 = pthread_mutex_unlock(&mutex);
+		if( errcode2 != EOK){
+				printf("CHILD: pthread_mutex_unlock failed for %s code %d\n", child_params->name, errcode2);
+		}else{
+			printf("CHILD: pthread_mutex_unlock successful for %s\n", child_params->name);
+		}
+
 
 		int i;
 		for(i=0; i<((int)spin_time*1000); i+=25)
@@ -92,13 +100,6 @@ void* child (void* params) {
 		delay(sleep_time*1000);
 		printf("%s period complete - %d spin %d sleep\n", child_params->name, child_params->spin_time, child_params->sleep_time);
 		fflush(stdout);
-
-		int errcode2 = pthread_mutex_unlock(&mutex);
-		if( errcode2 != EOK){
-				printf("MAIN: pthread_mutex_unlock failed for %s code %d\n", child_params->name, errcode2);
-			}else{
-				printf("MAIN: pthread_mutex_unlock successful for %s\n", child_params->name);
-			}
 
 	}
 
@@ -205,6 +206,13 @@ int main(int argc, char *argv[]) {
 			printf("pthread_create failed\n");
 			exit(2);
 		}
+
+		int errcode = pthread_mutex_lock(&child_buffer[alive_children].mutex);
+		if( errcode != EOK){
+			printf("MAIN: pthread_mutex_lock failed for %s, code %d\n", child_buffer[alive_children].name, errcode);
+		}else{
+			printf("MAIN: pthread_mutex_lock successful for %s\n", child_buffer[alive_children].name);
+		}
 	}
 
 	time_t currTime = time(NULL);
@@ -216,10 +224,10 @@ int main(int argc, char *argv[]) {
 
 		char child_to_kill[MAX_NAME_LENGTH];
 		memset(child_to_kill, 0x00, MAX_NAME_LENGTH);
-		printf("Enter name of child to kill: \n");
+		printf("Enter name of child to unlock: \n");
 		fflush(stdout);
 		scanf("%s", child_to_kill);
-		printf("Attempting to kill %s\n", child_to_kill);
+		printf("Attempting to unlock %s\n", child_to_kill);
 
 		int i;
 		for( i=0; i < MAX_CHILDREN; i++ )
@@ -230,17 +238,11 @@ int main(int argc, char *argv[]) {
 				continue;
 			}
 			if( strcmp(child_to_kill, child_name) == 0 ){
-				if( ThreadDestroy(children[i], 10, NULL) != 0){ //Should use POSIX command?? keep as Microkernel?
-					printf("Failed to kill %s\n", child_name);
+				if( pthread_mutex_unlock(&child_buffer[i].mutex) != EOK){
+					printf("Failed to unlock %s\n", child_name);
 					fflush(stdout);
-				}else{
-					alive_children--;
 				}
 			}
-		}
-
-		if(alive_children <= 0){
-			keep_alive = 0;
 		}
 	}
 
