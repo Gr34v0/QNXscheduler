@@ -19,7 +19,7 @@ struct child_params_s{
 	int sleep_time;
 	int spin_time;
 	int thread_priority;
-	pthread_mutex_t mutex;
+	pthread_mutex_t *mutex_ptr;
 };
 
 struct child_params_s child_buffer[ MAX_CHILDREN ];

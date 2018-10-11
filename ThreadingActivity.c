@@ -97,7 +97,14 @@ int main(int argc, char *argv[]) {
 		child_buffer[params_count].sleep_time = *sleep;
 		child_buffer[params_count].spin_time = *spin;
 		child_buffer[params_count].thread_priority = *prio;
-		//child_buffer[params_count].mutex = mutex;
+
+		pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+			if(pthread_mutex_init(&mutex, NULL) != EOK){
+				printf("pthread_mutex_init has failed for child thread %s\n", child_buffer[params_count].name);
+			}else{
+				printf("pthread_mutex_init successful for child thread %s\n", child_buffer[params_count].name);
+			}
+		child_buffer[params_count].mutex_ptr = &mutex;
 
 	}
 
@@ -106,18 +113,22 @@ int main(int argc, char *argv[]) {
 
 	//create child threads
 	int alive_children;
-	for(alive_children = 0; alive_children < params_count; alive_children++ ){
-		if(pthread_create(&children[alive_children], NULL, child, &child_buffer[alive_children]) !=0){
-			printf("pthread_create failed\n");
-			exit(2);
-		}
 
-		int errcode = pthread_mutex_lock(&child_buffer[alive_children].mutex);
+	for(alive_children = 0; alive_children < params_count; alive_children++ ){
+
+		int errcode = pthread_mutex_lock(child_buffer[alive_children].mutex_ptr);
 		if( errcode != EOK){
 			printf("MAIN: pthread_mutex_lock failed for %s, code %d\n", child_buffer[alive_children].name, errcode);
 		}else{
 			printf("MAIN: pthread_mutex_lock successful for %s\n", child_buffer[alive_children].name);
 		}
+
+		if(pthread_create(&children[alive_children], NULL, child, &child_buffer[alive_children]) !=0){
+			printf("pthread_create failed\n");
+			exit(2);
+		}
+
+
 	}
 
 	time_t currTime = time(NULL);
@@ -127,12 +138,12 @@ int main(int argc, char *argv[]) {
 	int keep_alive = 1;
 	while(keep_alive){
 
-		char child_to_kill[MAX_NAME_LENGTH];
-		memset(child_to_kill, 0x00, MAX_NAME_LENGTH);
+		char child_to_unlock[MAX_NAME_LENGTH];
+		memset(child_to_unlock, 0x00, MAX_NAME_LENGTH);
 		printf("Enter name of child to unlock: \n");
 		fflush(stdout);
-		scanf("%s", child_to_kill);
-		printf("Attempting to unlock %s\n", child_to_kill);
+		scanf("%s", child_to_unlock);
+		printf("Attempting to unlock %s\n", child_to_unlock);
 
 		int i;
 		for( i=0; i < MAX_CHILDREN; i++ )
@@ -142,12 +153,19 @@ int main(int argc, char *argv[]) {
 			if(strcmp(child_name, "main") == 0){
 				continue;
 			}
-			if( strcmp(child_to_kill, child_name) == 0 ){
-				if( pthread_mutex_unlock(&child_buffer[i].mutex) != EOK){
+			if( strcmp(child_to_unlock, child_name) == 0 ){
+				if( pthread_mutex_unlock(child_buffer[i].mutex_ptr) != EOK){
 					printf("Failed to unlock %s\n", child_name);
 					fflush(stdout);
 				}
 			}
+			sleep(0.5);
+
+			if( pthread_mutex_lock(child_buffer[i].mutex_ptr) != EOK){
+				printf("Failed to lock %s\n", child_name);
+				fflush(stdout);
+			}
+
 		}
 	}
 
