@@ -19,10 +19,8 @@ struct child_params_s{
 	int sleep_time;
 	int spin_time;
 	int thread_priority;
-	pthread_mutex_t *mutex_ptr;
+	pthread_mutex_t mutex;
 };
-
-struct child_params_s child_buffer[ MAX_CHILDREN ];
 
 
 #endif /* SCHEDULERSTRUCTS_H_ */

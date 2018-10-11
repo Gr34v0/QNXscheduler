@@ -29,7 +29,7 @@ void* child (void* params) {
 	int sleep_time = child_params->sleep_time;
 	int spin_time = child_params->spin_time;
 	int thread_priority = child_params->thread_priority;
-	pthread_mutex_t *mutex = child_params->mutex_ptr;
+	//child_params->mutex;
 
 	pthread_setname_np(pthread_self(), child_params->name);
 	pthread_setschedprio(pthread_self(), thread_priority);
@@ -45,14 +45,14 @@ void* child (void* params) {
 
 	while(1)
 	{
-		int errcode = pthread_mutex_lock(mutex);
+		int errcode = pthread_mutex_lock(&child_params->mutex);
 		if( errcode != EOK){
 			printf("CHILD %s: pthread_mutex_lock failed, code %d\n", child_params->name, errcode);
 		}else{
 			printf("CHILD %s: pthread_mutex_lock successful\n", child_params->name);
 		}
 
-		int errcode2 = pthread_mutex_unlock(mutex);
+		int errcode2 = pthread_mutex_unlock(&child_params->mutex);
 		if( errcode2 != EOK){
 				printf("CHILD %s: pthread_mutex_unlock failed, code %d\n", child_params->name, errcode2);
 		}else{

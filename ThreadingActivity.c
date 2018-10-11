@@ -15,6 +15,10 @@
 #include <SchedulerStructs.h>
 #include <child.h>
 
+
+struct child_params_s child_buffer[ MAX_CHILDREN ];
+
+
 int inputNumberOfChildren(){
 	int number_of_children;
 	printf("How many children would you like to spawn? Max %d: ", MAX_CHILDREN);
@@ -98,13 +102,14 @@ int main(int argc, char *argv[]) {
 		child_buffer[params_count].spin_time = *spin;
 		child_buffer[params_count].thread_priority = *prio;
 
-		pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-			if(pthread_mutex_init(&mutex, NULL) != EOK){
-				printf("pthread_mutex_init has failed for child thread %s\n", child_buffer[params_count].name);
-			}else{
-				printf("pthread_mutex_init successful for child thread %s\n", child_buffer[params_count].name);
-			}
-		child_buffer[params_count].mutex_ptr = &mutex;
+		//pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+		//child_buffer[params_count].mutex;
+		if(pthread_mutex_init(&child_buffer[params_count].mutex, NULL) != EOK){
+			printf("pthread_mutex_init has failed for child thread %s\n", child_buffer[params_count].name);
+		}else{
+			printf("pthread_mutex_init successful for child thread %s\n", child_buffer[params_count].name);
+		}
 
 	}
 
@@ -116,7 +121,7 @@ int main(int argc, char *argv[]) {
 
 	for(alive_children = 0; alive_children < params_count; alive_children++ ){
 
-		int errcode = pthread_mutex_lock(child_buffer[alive_children].mutex_ptr);
+		int errcode = pthread_mutex_lock(&child_buffer[alive_children].mutex);
 		if( errcode != EOK){
 			printf("MAIN: pthread_mutex_lock failed for %s, code %d\n", child_buffer[alive_children].name, errcode);
 		}else{
@@ -154,15 +159,18 @@ int main(int argc, char *argv[]) {
 				continue;
 			}
 			if( strcmp(child_to_unlock, child_name) == 0 ){
-				if( pthread_mutex_unlock(child_buffer[i].mutex_ptr) != EOK){
+				if( pthread_mutex_unlock(&child_buffer[i].mutex) != EOK){
 					printf("Failed to unlock %s\n", child_name);
 					fflush(stdout);
 				}
 			}
 			sleep(0.5);
 
-			if( pthread_mutex_lock(child_buffer[i].mutex_ptr) != EOK){
+			if( pthread_mutex_lock(&child_buffer[i].mutex) != EOK){
 				printf("Failed to lock %s\n", child_name);
+				fflush(stdout);
+			} else{
+				printf("Relock successful for %s\n", child_name);
 				fflush(stdout);
 			}
 
