@@ -54,7 +54,7 @@ void* child (void* params) {
 
 		int errcode2 = pthread_mutex_unlock(&child_params->mutex);
 		if( errcode2 != EOK){
-				printf("CHILD %s: pthread_mutex_unlock failed, code %d\n", child_params->name, errcode2);
+			printf("CHILD %s: pthread_mutex_unlock failed, code %d\n", child_params->name, errcode2);
 		}else{
 			printf("CHILD %s: pthread_mutex_unlock successful\n", child_params->name);
 		}
