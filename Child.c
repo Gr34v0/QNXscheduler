@@ -29,15 +29,11 @@ void* child (void* params) {
 	int sleep_time = child_params->sleep_time;
 	int spin_time = child_params->spin_time;
 	int thread_priority = child_params->thread_priority;
-	//child_params->mutex;
 
 	pthread_setname_np(pthread_self(), child_params->name);
 	pthread_setschedprio(pthread_self(), thread_priority);
 
-
-
-	sleep(1); //wait for name to be assigned from main thread
-	// if this isn't done, the child thread won't always be aware of what it's name is.
+	sleep(1);
 
 	printf("%s is alive\n", child_params->name);
 

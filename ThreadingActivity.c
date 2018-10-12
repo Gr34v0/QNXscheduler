@@ -102,9 +102,6 @@ int main(int argc, char *argv[]) {
 		child_buffer[params_count].spin_time = *spin;
 		child_buffer[params_count].thread_priority = *prio;
 
-		//pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
-		//child_buffer[params_count].mutex;
 		if(pthread_mutex_init(&child_buffer[params_count].mutex, NULL) != EOK){
 			printf("pthread_mutex_init has failed for child thread %s\n", child_buffer[params_count].name);
 		}else{
