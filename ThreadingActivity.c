@@ -108,14 +108,12 @@ int main(int argc, char *argv[]) {
 	time_t currTime = time(NULL);
 	printf("Children created - now waiting - %s\n", ctime(&currTime));
 
+	sleep(5);
 
 	int keep_alive = 1;
 	int thread_indexer = 0;
 
 	while(keep_alive){
-
-		//printf("TICK SWAP\n");
-		//fflush(stdout);
 
 		sleep(SCHEDULER_TICK);
 
