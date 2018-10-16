@@ -9,17 +9,13 @@
 #define SCHEDULERSTRUCTS_H_
 
 //max 10 children total
-#define MAX_CHILDREN 10
-#define MAX_NAME_LENGTH 16
-
-pthread_t children[MAX_CHILDREN];
+#define MAX_CHILDREN 10 //children
+#define MAX_NAME_LENGTH 16 //characters
+#define SCHEDULER_TICK 1 //second(s)
 
 struct child_params_s{
 	char name[MAX_NAME_LENGTH];
-	int sleep_time;
 	int spin_time;
-	int thread_priority;
-	pthread_mutex_t mutex;
 };
 
 
