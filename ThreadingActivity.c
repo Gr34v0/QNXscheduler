@@ -17,7 +17,7 @@
 
 
 struct child_params_s child_buffer[ MAX_CHILDREN ];
-pthread_t children[MAX_CHILDREN];
+pthread_t children[ MAX_CHILDREN ];
 
 
 int inputNumberOfChildren(){
@@ -37,7 +37,7 @@ int inputNumberOfChildren(){
 
 
 /*
- * Spawns two child threads, child 1 sleeps for 5 seconds and child 2 sleeps for 10 seconds.
+ * Spawns child threads, sleeps for a "tick" period of time, swaps
  * Main thread prints time stamps when children awaken.
  */
 int main(int argc, char *argv[]) {
@@ -110,28 +110,16 @@ int main(int argc, char *argv[]) {
 
 
 	int keep_alive = 1;
+	int thread_indexer = 0;
+
 	while(keep_alive){
 
-		char child_to_unlock[MAX_NAME_LENGTH];
-		memset(child_to_unlock, 0x00, MAX_NAME_LENGTH);
-		printf("Enter name of child to unlock: \n");
-		fflush(stdout);
-		scanf("%s", child_to_unlock);
-		printf("Attempting to unlock %s\n", child_to_unlock);
+		sleep(SCHEDULER_TICK);
 
-		int i;
-		for( i=0; i < MAX_CHILDREN; i++ )
-		{
-			char child_name[MAX_NAME_LENGTH];
-			pthread_getname_np(children[i], child_name, MAX_NAME_LENGTH);
-			if(strcmp(child_name, "main") == 0){
-				continue;
-			}
+		pthread_setschedprio(children[thread_indexer%children_count], 5);
+		thread_indexer++;
+		pthread_setschedprio(children[thread_indexer%children_count], 9);
 
-
-			sleep(0.5);
-
-		}
 	}
 
 	printf("Children have all been slaughtered.\n");
