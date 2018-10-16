@@ -114,9 +114,12 @@ int main(int argc, char *argv[]) {
 
 	while(keep_alive){
 
+		//printf("TICK SWAP\n");
+		//fflush(stdout);
+
 		sleep(SCHEDULER_TICK);
 
-		pthread_setschedprio(children[thread_indexer%children_count], 5);
+		pthread_setschedprio(children[thread_indexer%children_count], 8);
 		thread_indexer++;
 		pthread_setschedprio(children[thread_indexer%children_count], 9);
 
